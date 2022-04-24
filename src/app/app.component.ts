@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+
 import { Product } from './models/product.model';
 
 @Component({
@@ -8,7 +9,8 @@ import { Product } from './models/product.model';
 })
 export class AppComponent {
   imgParent = '';
-  showImg: boolean = true;
+  showImg = true;
+
 
   onLoaded(img: string) {
     console.log('log padre', img);
@@ -17,5 +19,4 @@ export class AppComponent {
   toggleImg() {
     this.showImg = !this.showImg;
   }
-
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { Product } from 'src/app/models/product.model';
-import { ProductsService } from 'src/app/services/products.service';
-import { StoreService } from '../../services/store.service'
+import { Product, createProductDTO } from '../../models/product.model';
+import { StoreService } from '../../services/store.service';
+import { ProductsService } from '../../services/products.service';
 
 @Component({
   selector: 'app-products',
@@ -13,27 +13,95 @@ export class ProductsComponent implements OnInit {
   myShoppingCart: Product[] = [];
   total = 0;
   products: Product[] = [];
-  today = new Date();
-  date = new Date(2021, 2, 16);
-
-  constructor(
-    private _storeService: StoreService,
-    private _productsService: ProductsService) 
-  { 
-    this.myShoppingCart = this._storeService.getShoppingCart();
+  showProductDetail: boolean = false;
+  productChosen: Product = {
+    id: '',
+    price: 0,
+    images: [],
+    title: '',
+    category: {
+      id: 0,
+      name: ''
+    },
+    description: ''
   }
 
-  ngOnInit() {
-    this._productsService.getAllProducts()
-      .subscribe(data => {
-        console.log(data);
-        this.products = data;
-      })
+  limit = 10;
+  offset = 0;
+
+  constructor(
+    private storeService: StoreService,
+    private productsService: ProductsService
+  ) {
+    this.myShoppingCart = this.storeService.getShoppingCart();
+  }
+
+  ngOnInit(): void {
+    this.productsService.getProductsByPage(10, 0)
+    .subscribe(data => {
+      this.products = data;
+      this.offset += this.limit;
+    });
   }
 
   onAddToShoppingCart(product: Product) {
-    this._storeService.addProduct(product);
-    this.total = this._storeService.getTotal();
+    this.storeService.addProduct(product);
+    this.total = this.storeService.getTotal();
   }
 
+  toggleProductDetail() {
+    this.showProductDetail = !this.showProductDetail;
+  }
+
+  onShowDetail(id: string) {
+    this.productsService.getProduct(id)
+      .subscribe(data => {
+        this.toggleProductDetail();
+        this.productChosen = data;
+      })
+  }
+
+  createNewProduct() {
+    const product: createProductDTO = {
+      title: 'Nuevo Producto',
+      description: 'Nueva descripcion',
+      images: ['https://placeimg.com/640/480/any'],
+      price: 1000,
+      categoryId: 2 
+    }
+    this.productsService.createProduct(product)
+      .subscribe(data => {
+        this.products.unshift(data);
+      })
+  }
+
+  updateProduct() {
+    const changes = {
+      title: 'nuevo titulo'
+    }
+    const id = this.productChosen.id;
+    this.productsService.updateProduct(id, changes)
+    .subscribe(data => {
+      const productIndex = this.products.findIndex(item => item.id === this.productChosen.id);
+      this.products[productIndex] = data;
+    })
+  }
+
+  deleteProduct() {
+    const id = this.productChosen.id;
+    this.productsService.deleteProduct(id)
+    .subscribe(() => {
+      const productIndex = this.products.findIndex(item => item.id === this.productChosen.id);
+      this.products.splice(productIndex, 1);
+      this.showProductDetail = false;
+    })
+  }
+
+  loadMore() {
+    this.productsService.getProductsByPage(this.limit, this.offset)
+    .subscribe(data => {
+      this.products = this.products.concat(data);
+      this.offset += this.limit; 
+    });
+  }
 }

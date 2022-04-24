@@ -1,8 +1,9 @@
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 
+import { SwiperModule } from 'swiper/angular';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ImgComponent } from './components/img/img.component';
@@ -27,8 +28,9 @@ import { HighlightDirective } from './directives/highlight.directive';
   imports: [
     BrowserModule,
     AppRoutingModule,
+    HttpClientModule,
     FormsModule,
-    HttpClientModule
+    SwiperModule
   ],
   providers: [],
   bootstrap: [AppComponent]
